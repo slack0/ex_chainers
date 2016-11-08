@@ -1,3 +1,6 @@
+'''
+Polynomial regression / Function Approximation with Chainer
+'''
 
 from __future__ import division
 import numpy as np
