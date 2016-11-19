@@ -38,7 +38,7 @@ class display_train(object):
         for row in self.train_log:
             print(row)
 
-        # time.sleep(0.009)
+        time.sleep(0.1)
 
         ''' reset train_log data after printing'''
         self.train_log = []
@@ -46,23 +46,24 @@ class display_train(object):
 class QuadChain(Chain):
     def __init__(self):
         super(QuadChain, self).__init__(
-                l1 = L.Linear(1,4),
-                l2 = L.Linear(4,1)
-                # l3 = L.Linear(4,4),
+                l1 = L.Linear(1,3),
+                l2 = L.Linear(3,3),
+                l3 = L.Linear(3,1)
                 # l4 = L.Linear(4,2),
                 # l5 = L.Linear(2,1)
                 )
 
     def __call__(self,x):
         h1 = F.relu(self.l1(x))
-        # h1 = F.tanh(self.l1(x))
+        h2 = F.relu(self.l2(h1))
+        # h1 = F.relu(self.l1(x))
         # h2 = F.relu(self.l2(h1))
         # h3 = F.relu(self.l3(h2))
         # h4 = F.relu(self.l4(h3))
-        # return F.tanh(self.l2(h1))
-        return F.relu(self.l2(h1))
+        # return F.relu(self.l2(h1))
+        return self.l3(h2)
 
-def linear_train(train_data, train_target, n_epochs=10000):
+def linear_train(train_data, train_target, n_epochs=1000):
     dt = display_train()
     dt.header = 'Epoch\tLoss'
 
@@ -86,9 +87,9 @@ if __name__ == "__main__":
     # y += 27*np.random.rand(1000).astype(np.float32)
 
     model = QuadChain()
-    # optimizer = optimizers.AdaDelta(rho=0.9)
+    optimizer = optimizers.AdaDelta(rho=0.9)
     # optimizer = optimizers.MomentumSGD()
-    optimizer = optimizers.Adam()
+    # optimizer = optimizers.Adam()
     optimizer.use_cleargrads()
     optimizer.setup(model) 
 
