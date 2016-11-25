@@ -36,13 +36,14 @@ class display_train(object):
         print(self.term.clear)
         ''' get the length of a sample string in train_log for formatting header '''
 
-        print(self.term.bold_red + '='*self.W + self.term.normal)
+        print(self.term.bold_red + '='*(len(self.header)+20) + self.term.normal)
         print(self.term.bold + self.header + self.term.normal)
-        print(self.term.bold_red + '='*self.W + self.term.normal)
+        print(self.term.bold_red + '='*(len(self.header)+20) + self.term.normal)
         for row in self.train_log:
             print(row)
 
-        time.sleep(3)
+        ''' introduce delay in refresh to see the progression of train/test error '''
+        # time.sleep(0.01)
 
         ''' reset train_log data after printing'''
         self.train_log = []
@@ -56,9 +57,9 @@ class QuadChain(Chain):
                 )
 
     def __call__(self,x):
-        h1 = F.relu(self.l1(x))
-        h2 = F.relu(self.l2(h1))
-        return F.relu(self.l3(h2))
+        h1 = F.sigmoid(self.l1(x))
+        h2 = F.sigmoid(self.l2(h1))
+        return self.l3(h2)
 
 
 def main():
@@ -75,8 +76,8 @@ def main():
 
     ''' generate data '''
     x = np.random.rand(1000).astype(np.float32)
-    y = 7*x**2 - 4*x +10
-    y += 27*np.random.rand(1000).astype(np.float32)
+    y = 3.7*x**3 + 7*x**2 - 4*x +10
+    y += 8*np.random.rand(1000).astype(np.float32)
 
     N = args.batch_size * 30
     x_train, x_test = np.split(x, [N])
@@ -87,24 +88,24 @@ def main():
     # optimizer = optimizers.AdaDelta(rho=0.9)
     optimizer = optimizers.MomentumSGD()
     # optimizer = optimizers.Adam()
-    optimizer.use_cleargrads() 
-    optimizer.setup(model) 
+    optimizer.use_cleargrads()
+    optimizer.setup(model)
 
-    ''' 
+    '''
     -- prepare test data here
     -- train data needs to be shuffled for each epoch; so we will deal with it there
     '''
     test_data = Variable(x_test.reshape(x_test.shape[0],-1))
     test_target = Variable(y_test.reshape(y_test.shape[0],-1))
 
-    ''' 
-    - start training 
+    '''
+    - start training
     - for each epoch, iterate over each mini batches and perform model update
     - at the end of each mini batch, calculate test loss
     '''
 
     dt = display_train()
-    dt.header = 'Epoch\tMini Batch\tTraining Loss\tTest Loss'
+    dt.header = str("{:^5} {:^5} {:^5} {:^5}".format('Epoch', 'Mini Batch', 'Train Loss', 'Test Loss'))
 
     for each_epoch in xrange(1, args.n_epochs+1):
         permuted_ordering = np.random.permutation(N)
@@ -117,18 +118,17 @@ def main():
             train_target = Variable(y_batch.reshape(y_batch.shape[0],-1))
 
             train_pred = model(train_data)
-            train_loss = F.mean_squared_error(train_target, train_pred) 
+            train_loss = F.mean_squared_error(train_target, train_pred)
 
             model.cleargrads()
             train_loss.backward()
-            optimizer.update() 
-
+            optimizer.update()
 
             ''' calculate test loss after this mini batch optimizer/network update '''
             test_pred = model(test_data)
             test_loss = F.mean_squared_error(test_target, test_pred)
 
-            logstr = str("{}\t{}\t{}\t{}".format(each_epoch, mini_batch_index, train_loss.data, test_loss.data))
+            logstr = str("{:4}\t{:4d}\t{:10.8} {:10.8}".format(each_epoch, mini_batch_index, train_loss.data, test_loss.data))
 
             dt.train_log.append(logstr)
             if (len(dt.train_log) == dt.H):
@@ -137,3 +137,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
