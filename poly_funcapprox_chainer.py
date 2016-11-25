@@ -1,5 +1,7 @@
 '''
 Polynomial regression / Function Approximation with Chainer
+
+Using Chainers iterators and trainer objects
 '''
 
 from __future__ import division
@@ -47,15 +49,17 @@ class FuncApproxer(chainer.Chain):
         self.y = None
         self.loss = None
 
-    def __call__(self, *args):
+    def __call__(self, args):
+        # print('Len of incoming args = {}'.format(len(args)))
+        # print(args[0].data)
+        # print(type(args[0].data))
         assert len(args) >= 2
-        x = args[:-1]
-        t = args[-1]
-        print('\nX = {}'.format(x[0].data))
-        print('\nt = {}'.format(t.data))
+        x = args[:,0:-1]
+        t = args[:,-1:]
+
         self.y = None
         self.loss = None
-        self.y = self.predictor(*x)
+        self.y = self.predictor(x)
         self.loss = self.lossfun(self.y, t)
         reporter.report({'loss': self.loss}, self)
 
@@ -64,16 +68,16 @@ class FuncApproxer(chainer.Chain):
 
 def main():
     parser = argparse.ArgumentParser(description='Second order polynomial approximation with MLP')
-    parser.add_argument('--n_hidden_units', '-n', type=int, default=3, 
+    parser.add_argument('--n_hidden_units', '-n', type=int, default=3,
             help='Number of hidden units per hidden layer')
     parser.add_argument('--batch_size', '-b', type=int, default=1,
             help='Batch size for each epoch')
-    parser.add_argument('--n_epochs', '-e', type=int, default=1000,
+    parser.add_argument('--n_epochs', '-e', type=int, default=20,
             help='Number of epochs to run')
     args = parser.parse_args()
 
     print('Number of hidden units: {}'.format(args.n_hidden_units))
-    print('Number of epocsh: {}'.format(args.n_epochs))
+    print('Number of epochs: {}'.format(args.n_epochs))
     print('Batch size: {}'.format(args.batch_size))
     print('')
 
@@ -84,11 +88,19 @@ def main():
 
     ''' create train/test data '''
     x = np.random.rand(1000).astype(np.float32)
-    y = 7*x**2 - 8*x +10
-    y += 6*np.random.rand(1000).astype(np.float32)
+    y = 10*x**2 - 8*x + 7
+    y += 6.3423*np.random.rand(1000).astype(np.float32)
     X_tr, X_te, y_tr, y_te = train_test_split(x, y)
-    train = [(X_tr[i], y_tr[i]) for i in range(X_tr.shape[0])]
-    test  = [(X_te[i], y_te[i]) for i in range(X_te.shape[0])]
+
+    # train = [(X_tr[i], y_tr[i]) for i in range(X_tr.shape[0])] 
+    # test  = [(X_te[i], y_te[i]) for i in range(X_te.shape[0])]
+
+    # train = np.concatenate((X_tr.reshape(len(X_tr),-1), y_tr.reshape(len(y_tr),-1)), axis=1)
+    # test = np.concatenate((X_te.reshape(len(X_te),-1), y_te.reshape(len(y_te),-1)), axis=1)
+
+    ''' just do a column_stack on the numpy arrays and create a tuple '''
+    train = tuple(np.column_stack((X_tr, y_tr)))
+    test = tuple(np.column_stack((X_te, y_te)))
 
     ''' create train and test iterators for chainer optimizer '''
     train_iter = chainer.iterators.SerialIterator(train, args.batch_size)
