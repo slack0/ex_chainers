@@ -88,7 +88,7 @@ def main():
 
     ''' create train/test data '''
     x = np.random.rand(1000).astype(np.float32)
-    y = 10*x**2 - 8*x + 7
+    y = 19*x**3 + 10*x**2 - 8*x + 7
     y += 6.3423*np.random.rand(1000).astype(np.float32)
     X_tr, X_te, y_tr, y_te = train_test_split(x, y)
 
@@ -119,7 +119,7 @@ def main():
     trainer.extend(extensions.LogReport())
 
     trainer.extend(extensions.PrintReport(
-        ['epoch', 'main/loss', 'validation/main/loss', 'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
+        ['epoch', 'main/loss', 'validation/main/loss', 'elapsed_time']))
 
     trainer.extend(extensions.ProgressBar())
 

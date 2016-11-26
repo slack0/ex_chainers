@@ -43,7 +43,7 @@ class display_train(object):
             print(row)
 
         ''' introduce delay in refresh to see the progression of train/test error '''
-        # time.sleep(0.01)
+        # time.sleep(3)
 
         ''' reset train_log data after printing'''
         self.train_log = []
@@ -69,19 +69,25 @@ def main():
     parser.add_argument('--n_epochs', '-e', type=int, default=1000, help='Number of epochs to run')
     args = parser.parse_args()
 
-    print('Number of hidden units: {}'.format(args.n_hidden_units))
-    print('Number of epocsh: {}'.format(args.n_epochs))
-    print('Batch size: {}'.format(args.batch_size))
-    print('')
 
     ''' generate data '''
     x = np.random.rand(1000).astype(np.float32)
-    y = 3.7*x**3 + 7*x**2 - 4*x +10
-    y += 8*np.random.rand(1000).astype(np.float32)
+    y = 19*x**3 + 10*x**2 - 8*x + 7
+    y += 6.3423*np.random.rand(1000).astype(np.float32)
 
-    N = args.batch_size * 30
+    N = args.batch_size * 10
+
+    print('Number of hidden units: {}'.format(args.n_hidden_units))
+    print('Number of epocsh: {}'.format(args.n_epochs))
+    print('Batch size: {}'.format(args.batch_size))
+    print('N: {}'.format(N))
+    print('')
+
     x_train, x_test = np.split(x, [N])
     y_train, y_test = np.split(y, [N])
+
+    print('Shape of train, test data: {}, {}'.format(x_train.shape, x_test.shape))
+    foo = raw_input('Enter any key to continue...')
 
     ''' instantiate the model and setup optimizer '''
     model = QuadChain(args.n_hidden_units)
